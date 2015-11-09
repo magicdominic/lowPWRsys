@@ -1,8 +1,3 @@
-test chris
-
-test chris
-
-test chris
 
 This is the skeleton app for the group project of the Low-Power Systems Design course.
 
