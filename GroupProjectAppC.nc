@@ -24,14 +24,15 @@ implementation {
   components new TimerMilliC();
   
   // serial port
-  components PrintfC, SerialStartC;
+  //components PrintfC, SerialStartC;   //?? output in flocklab??
+  components SerialPrintfC; //for output in cooja
   components new SerialAMSenderC(AM_GROUP_PROJECT_MSG);
 
   // data generation and forwarding logic
   components DataGeneratorC;
   components new PoolC(message_t, MSG_POOL_SIZE);
   components new QueueC(message_t *, MSG_POOL_SIZE);
-  components new GroupProjectCacheC(20);
+  components new GroupProjectCacheC(20); //cachsize
   components RandomC;
   
   // FlockLab
