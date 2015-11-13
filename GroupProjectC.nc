@@ -95,15 +95,41 @@ implementation {
   }
 
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
-    if (len != sizeof(group_project_msg_t)) {return bufPtr;}
-    else {
-      return forward(bufPtr);
+    if (len != sizeof(group_project_msg_t)) 
+      {return bufPtr;}
+    else 
+    {
+      // decide if we should forward our message
+      
+      //we are:     TOS_NODE_ID
+      
+      // from: 
+      
+      dbg("GroupProjectC", "received: %d.\n",*(int*)payload);
+      
+      
+      switch (TOS_NODE_ID)
+      {
+	case 1: //do shit
+	dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
+	return bufPtr;
+	break;
+	// write in comments what to do on which node
+	
+	default:
+	return forward(bufPtr);  
+      }
+      
+      
     }
   }
 
   event void Notify.notify(group_project_msg_t datamsg) {
+    
     message_t * m;
     group_project_msg_t* gpm;
+    
+    dbg("GroupProjectC", "Notify: notify.notify started.\n");
     
     call Leds.led0Toggle();
     if (!radioOn) {
