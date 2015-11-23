@@ -77,17 +77,135 @@ implementation {
   
   event void AMControl.stopDone(error_t err) {
     // do nothing
+    
   }
       
   event void MilliTimer.fired() {
     error_t ret;
     // sink node prints out data on serial port
-    if (TOS_NODE_ID == SINK_ADDRESS) {
+    dbg("GroupProjectC", "timer fired.\n");
+    if (TOS_NODE_ID == SINK_ADDRESS) 
+    {
+      dbg("GroupProjectC", "we are the sink and timer fired.\n");
        ret = call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
     }
     // other nodes forward data over radio
-    else {
-      ret = call AMSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
+    else 
+    {
+      switch (TOS_NODE_ID)
+      {
+	case 1: //do shit and 100% duty cycling
+	 // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
+	dbg("GroupProjectC", "not sending.\n");
+	
+	break;
+
+	case 2: // forwards and receives packets. 1st layer of burst.
+	      // Can receive from nodes 1, 4, 8, 15, and 33.
+	      dbg("GroupProjectC", "Node 2 fwds to 1.");
+	      ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 3: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 33, 32, 31, 6, 8, 15
+	dbg("GroupProjectC", "Node 3 collects and sends to 1 \n");
+	//TODO
+	ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 4: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 8, 15, and 33.
+	dbg("GroupProjectC", "Node 4 sends to 1 \n");
+	ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 6: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 3, 33, 28, 22, 16, 
+	dbg("GroupProjectC", "Node 6 sends to 28 \n");
+	ret = call AMSend.send(28, call Queue.head(), sizeof(group_project_msg_t));
+	break;
+
+	case 8: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 4, 15, 33, 3 
+	dbg("GroupProjectC", "Node 8 sends to 1\n");
+	ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	break;
+
+	case 15: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 4, 8, 33, 3 
+	dbg("GroupProjectC", "Node 15 sends to 1 \n");
+	ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 16: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 22, 28, 3
+	dbg("GroupProjectC", "Node 16 sends to 28 \n");
+	ret = call AMSend.send(28, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 22: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 16, 28, 3
+	dbg("GroupProjectC", "Node 22 sends to 28 \n");
+	ret = call AMSend.send(28, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 28: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 16, 22, 3, 33
+	dbg("GroupProjectC", "Node 28 collects and forwards to 3\n");
+	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 31: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 32, 33, 3, 28
+	dbg("GroupProjectC", "Node 31 sends to 3 \n");
+	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
+	
+	break;
+
+	case 32: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 31, 3, 33, 15
+	dbg("GroupProjectC", "Node 32 sends to 3 \n");
+	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
+	break;
+
+	case 33: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 8, 15, 2, 3, 32, 31
+	dbg("GroupProjectC", "Node 33 sends to 3 \n");
+	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
+
+	break;
+
+
+	default:
+	dbg("GroupProjectC", "OOOOOPS  we somehow missed a NODE. check it out!! \n");
+
+      }
+      
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
     }
     if (ret != SUCCESS) {
       startForwardTimer(); // retry in a short while
@@ -111,80 +229,82 @@ implementation {
       switch (TOS_NODE_ID)
       {
 	case 1: //do shit and 100% duty cycling
-  // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
+	 // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
 	dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
 	return bufPtr;
 	break;
 
-  case 2: // forwards and receives packets. 1st layer of burst.
-	// Can receive from nodes 1, 4, 8, 15, and 33.
-	dbg("Try for lower duty cycles.");
-  return bufPtr;
-  break;
+	case 2: // forwards and receives packets. 1st layer of burst.
+	      // Can receive from nodes 1, 4, 8, 15, and 33.
+	      dbg("GroupProjectC", "Try for lower duty cycles.");
+	return bufPtr;
+	break;
 
-  case 3: //forwards and receives packets. 2nd layer of burst.
-  // Can receive from nodes 33, 32, 31, 6, 8, 15
-  dbg("Node 3 Receives on 2nd wave.");
-  return bufPtr;
-  break;
+	case 3: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 33, 32, 31, 6, 8, 15
+	dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");;
+	return bufPtr;
+	break;
 
-  case 4: //forwards and receives packets. 1st layer of burst.
-  // Can receive from nodes 1, 2, 8, 15, and 33.
-  dbg("Node 4 Receives on 1st wave.");
-  return bufPtr;
-  break;
+	case 4: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 8, 15, and 33.
+	dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");;
+	return bufPtr;
+	break;
 
-  case 6: //forwards and receives packets. 3rd layer of burst.
-  // Can receive from nodes 3, 33, 28, 22, 16, 
-  dbg("Node 6 Receives on 3rd wave of flood.");
-  return bufPtr;
+	case 6: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 3, 33, 28, 22, 16, 
+	dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");;
+	return bufPtr;
+	break;
+	
+	case 8: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 4, 15, 33, 3 
+	dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 8: //forwards and receives packets. 1st layer of burst.
-  // Can receive from nodes 1, 2, 4, 15, 33, 3 
-  dbg("Node 8 Receives on 1st wave of flood.");
-  return bufPtr;
+	case 15: //forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 2, 4, 8, 33, 3 
+	dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 15: //forwards and receives packets. 1st layer of burst.
-  // Can receive from nodes 1, 2, 4, 8, 33, 3 
-  dbg("Node 15 Receives on 1st wave of flood.");
-  return bufPtr;
-  break;
+	case 16: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 22, 28, 3
+	dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 16: //forwards and receives packets. 3rd layer of burst.
-  // Can receive from nodes 6, 22, 28, 3
-  dbg("Node 16 Receives on 3rd wave of flood.");
-  return bufPtr;
-  break;
+	case 22: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 16, 28, 3
+	dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 22: //forwards and receives packets. 3rd layer of burst.
-  // Can receive from nodes 6, 16, 28, 3
-  dbg("Node 22 Receives on 3rd wave of flood.");
-  return bufPtr;
-  break;
+	case 28: //forwards and receives packets. 3rd layer of burst.
+	// Can receive from nodes 6, 16, 22, 3, 33
+	dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 28: //forwards and receives packets. 3rd layer of burst.
-  // Can receive from nodes 6, 16, 22, 3, 33
-  dbg("Node 28 Receives on 3rd wave of flood.");
-  return bufPtr;
-  break;
+	case 31: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 32, 33, 3, 28
+	dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 31: //forwards and receives packets. 2nd layer of burst.
-  // Can receive from nodes 32, 33, 3, 28
-  dbg("Node 31 Receives on 2nd wave of flood.");
-  return bufPtr;
-  break;
+	case 32: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 31, 3, 33, 15
+	dbg("GroupProjectC", "Node 32 Receives on 2nd wave of flood \n");;
+	return bufPtr;
+	break;
 
-  case 32: //forwards and receives packets. 2nd layer of burst.
-  // Can receive from nodes 31, 3, 33, 15
-  dbg("Node 32 Receives on 2nd wave of flood.");
-  return bufPtr;
-  break;
-
-  case 33: //forwards and receives packets. 2nd layer of burst.
-  // Can receive from nodes 8, 15, 2, 3, 32, 31
-  dbg("Node 33 Receives on 2nd wave of flood.");
-  return bufPtr;
-  break;
+	case 33: //forwards and receives packets. 2nd layer of burst.
+	// Can receive from nodes 8, 15, 2, 3, 32, 31
+	dbg("GroupProjectC", "Node 33 Receives on 2nd wave of flood \n");;
+	return bufPtr;
+	break;
 
 
 	default:
@@ -209,7 +329,7 @@ implementation {
     } 
     m = call Pool.get();
     if (m == NULL) {
-      dbg("GroupProjectC", "Notify: No more message buffers.\n");
+      dbg("GroupProjectC", "Notify: pool is empty or could not get pool.\n");
       return;
     }
     gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
@@ -291,9 +411,18 @@ implementation {
       call Pool.put(bufPtr);
       
       // send next waiting message
-      if (!call Queue.empty() && !locked) {
+      if (!call Queue.empty() && !locked) 
+      {
         locked = TRUE;
         startForwardTimer();
+      }
+      else
+      {
+	    call AMControl.stop();
+	    dbg("GroupProjectC", "Radio is OFF.\n");
+	    dbg("GroupProjectC", "Radio is OFF.\n");
+	    dbg("GroupProjectC", "Radio is OFF.\n");
+	
       }
     }
   }
