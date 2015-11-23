@@ -110,12 +110,83 @@ implementation {
       
       switch (TOS_NODE_ID)
       {
-	case 1: //do shit
+	case 1: //do shit and 100% duty cycling
+  // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
 	dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
 	return bufPtr;
 	break;
-	// write in comments what to do on which node
-	
+
+  case 2: // forwards and receives packets. 1st layer of burst.
+	// Can receive from nodes 1, 4, 8, 15, and 33.
+	dbg("Try for lower duty cycles.");
+  return bufPtr;
+  break;
+
+  case 3: //forwards and receives packets. 2nd layer of burst.
+  // Can receive from nodes 33, 32, 31, 6, 8, 15
+  dbg("Node 3 Receives on 2nd wave.");
+  return bufPtr;
+  break;
+
+  case 4: //forwards and receives packets. 1st layer of burst.
+  // Can receive from nodes 1, 2, 8, 15, and 33.
+  dbg("Node 4 Receives on 1st wave.");
+  return bufPtr;
+  break;
+
+  case 6: //forwards and receives packets. 3rd layer of burst.
+  // Can receive from nodes 3, 33, 28, 22, 16, 
+  dbg("Node 6 Receives on 3rd wave of flood.");
+  return bufPtr;
+
+  case 8: //forwards and receives packets. 1st layer of burst.
+  // Can receive from nodes 1, 2, 4, 15, 33, 3 
+  dbg("Node 8 Receives on 1st wave of flood.");
+  return bufPtr;
+
+  case 15: //forwards and receives packets. 1st layer of burst.
+  // Can receive from nodes 1, 2, 4, 8, 33, 3 
+  dbg("Node 15 Receives on 1st wave of flood.");
+  return bufPtr;
+  break;
+
+  case 16: //forwards and receives packets. 3rd layer of burst.
+  // Can receive from nodes 6, 22, 28, 3
+  dbg("Node 16 Receives on 3rd wave of flood.");
+  return bufPtr;
+  break;
+
+  case 22: //forwards and receives packets. 3rd layer of burst.
+  // Can receive from nodes 6, 16, 28, 3
+  dbg("Node 22 Receives on 3rd wave of flood.");
+  return bufPtr;
+  break;
+
+  case 28: //forwards and receives packets. 3rd layer of burst.
+  // Can receive from nodes 6, 16, 22, 3, 33
+  dbg("Node 28 Receives on 3rd wave of flood.");
+  return bufPtr;
+  break;
+
+  case 31: //forwards and receives packets. 2nd layer of burst.
+  // Can receive from nodes 32, 33, 3, 28
+  dbg("Node 31 Receives on 2nd wave of flood.");
+  return bufPtr;
+  break;
+
+  case 32: //forwards and receives packets. 2nd layer of burst.
+  // Can receive from nodes 31, 3, 33, 15
+  dbg("Node 32 Receives on 2nd wave of flood.");
+  return bufPtr;
+  break;
+
+  case 33: //forwards and receives packets. 2nd layer of burst.
+  // Can receive from nodes 8, 15, 2, 3, 32, 31
+  dbg("Node 33 Receives on 2nd wave of flood.");
+  return bufPtr;
+  break;
+
+
 	default:
 	return forward(bufPtr);  
       }
