@@ -44,6 +44,7 @@ implementation {
 
   bool locked;
   bool radioOn;
+  bool startedRadioAlready;
   uint8_t seq_no = 0;
   
   // function prototypes
@@ -68,7 +69,7 @@ implementation {
     if (err == SUCCESS) {
       radioOn=TRUE;
       call Leds.led1On();
-      dbg("GroupProjectC", "Radio on, datarate is %u.\n", datarate);
+      dbg("GroupProjectC", "Radio sucessfully booted, Radio is on, datarate is %u.\n", datarate);
     }
     else {
       call AMControl.start();
@@ -84,6 +85,22 @@ implementation {
     error_t ret;
     // sink node prints out data on serial port
     dbg("GroupProjectC", "timer fired.\n");
+    
+    if (radioOn == FALSE) 
+    {
+      if (startedRadioAlready == FALSE)
+      {
+	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
+	call AMControl.start();
+	startedRadioAlready = TRUE;
+      }
+      else
+	//radio is booting, just wait
+	dbg("GroupProjectC", "radio is booting.\n");
+      
+      // TODO start another timer ??!!?
+    }
+    
     if (TOS_NODE_ID == SINK_ADDRESS) 
     {
       dbg("GroupProjectC", "we are the sink and timer fired.\n");
@@ -320,16 +337,32 @@ implementation {
     message_t * m;
     group_project_msg_t* gpm;
     
-    dbg("GroupProjectC", "Notify: notify.notify started.\n");
+    dbg("GroupProjectC", "Notify: we got more data.\n");
     
     call Leds.led0Toggle();
-    if (!radioOn) {
-      dbg("GroupProjectC", "Notify: Radio not ready.\n");
-      return; // radio not ready yet
-    } 
+    
+    
+    
+     if (radioOn == FALSE) 
+    {
+      dbg("GroupProjectC", "Notify: Radio yet not ready.\n");
+      if (startedRadioAlready == FALSE)
+      {
+	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
+	call AMControl.start();
+	startedRadioAlready = TRUE;
+      }
+      else
+	//radio is booting, just wait
+	dbg("GroupProjectC", "radio is booting.\n");
+    }
+    
+    
+    
+    
     m = call Pool.get();
     if (m == NULL) {
-      dbg("GroupProjectC", "Notify: pool is empty or could not get pool.\n");
+      dbg("GroupProjectC", "Notify: pool is empty or pool returned null object.\n");
       return;
     }
     gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
@@ -416,14 +449,14 @@ implementation {
         locked = TRUE;
         startForwardTimer();
       }
-      else
-      {
+      
+      // TURN OFF RADIO 
+      // TODO: filter for each node. only turn off on sending only nodes
 	    call AMControl.stop();
+	    radioOn=FALSE;
+	    startedRadioAlready=FALSE;
 	    dbg("GroupProjectC", "Radio is OFF.\n");
-	    dbg("GroupProjectC", "Radio is OFF.\n");
-	    dbg("GroupProjectC", "Radio is OFF.\n");
-	
-      }
+	    
     }
   }
   
