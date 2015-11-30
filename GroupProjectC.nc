@@ -53,13 +53,21 @@ implementation {
   void message_to_cache_entry(message_t *m, cache_entry_t * c);
   void senddone(message_t* bufPtr, error_t error);
   void startForwardTimer();
+  void startRandomForwardTimer();
+  void startImmediateTimer();
+  void startRadioTurnOnTimer();
+
   
   enum {
-    FORWARD_DELAY_MS = 3, // max wait time between two forwarded packets
+    FORWARD_DELAY_MS = 50, // max wait time between two forwarded packets
   };
   
-  event void Boot.booted() {
-    call AMControl.start();
+  event void Boot.booted() 
+  {
+    if(TOS_NODE_ID == 1 || TOS_NODE_ID ==3 || TOS_NODE_ID == 28)
+    {
+      call AMControl.start();
+    }
 #ifndef COOJA
     call ClockCalibControl.start();
 #endif
@@ -93,12 +101,12 @@ implementation {
 	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
 	call AMControl.start();
 	startedRadioAlready = TRUE;
+	startRadioTurnOnTimer();
       }
       else
 	//radio is booting, just wait
-	dbg("GroupProjectC", "radio is booting.\n");
-      
-      // TODO start another timer ??!!?
+	dbg("GroupProjectC", "radio is booting. !!! we need to change our radio timer!!!!\n");
+	// we should not get here anymore
     }
     
     if (TOS_NODE_ID == SINK_ADDRESS) 
@@ -109,6 +117,7 @@ implementation {
     // other nodes forward data over radio
     else 
     {
+      dbg("GroupProjectC", "timer start switch.\n");
       switch (TOS_NODE_ID)
       {
 	case 1: //do shit and 100% duty cycling
@@ -205,27 +214,22 @@ implementation {
 
       }
       
-
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
+      dbg("GroupProjectC", "done timer.\n");
+ 
       
       
     }
-    if (ret != SUCCESS) {
-      startForwardTimer(); // retry in a short while
+    
+    if (ret != SUCCESS) 
+    {
+      if (TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID != 28)
+      {
+	  startRandomForwardTimer(); // retry in a defined while
+      }
+      else
+      {
+	// stay on
+      }
     }
   }
 
@@ -341,28 +345,46 @@ implementation {
     
     call Leds.led0Toggle();
     
+    if(TOS_NODE_ID == 1 || TOS_NODE_ID ==3 || TOS_NODE_ID == 28)
+      startImmediateTimer();
     
-    
-     if (radioOn == FALSE) 
+    if (TOS_NODE_ID == 1)
     {
-      dbg("GroupProjectC", "Notify: Radio yet not ready.\n");
-      if (startedRadioAlready == FALSE)
-      {
-	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
-	call AMControl.start();
-	startedRadioAlready = TRUE;
-      }
-      else
-	//radio is booting, just wait
-	dbg("GroupProjectC", "radio is booting.\n");
+      call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
     }
     
     
     
     
+    //if (radioOn == FALSE && (call Queue.size() <3) )     
+    if (call Pool.size() < 7 )
+    {
+      dbg("GroupProjectC", "Notify: pool <7.\n");
+      if (startedRadioAlready == FALSE)
+      {
+	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
+	call AMControl.start();
+	startedRadioAlready = TRUE;
+
+      }
+      else if(radioOn == FALSE)
+      {
+	//radio is booting, just wait
+	dbg("GroupProjectC", "radio is still booting.\n");
+      }
+      else
+      {
+	startImmediateTimer();
+      }
+
+      
+    }
+ 
+    
+    
     m = call Pool.get();
     if (m == NULL) {
-      dbg("GroupProjectC", "Notify: pool is empty or pool returned null object.\n");
+      dbg("GroupProjectC", "Notify: pool is empty => queue is full or pool returned null object.\n");
       return;
     }
     gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
@@ -444,29 +466,69 @@ implementation {
       call Pool.put(bufPtr);
       
       // send next waiting message
-      if (!call Queue.empty() && !locked) 
+      //if (!call Queue.empty() && !locked) 
+      if (!call Queue.empty()) 
       {
+	dbg("GroupProjectC", "queue not empty.\n");
+	dbg("GroupProjectC", "queue: p:%u q:%u\n", call Pool.size(), call Queue.size());
         locked = TRUE;
-        startForwardTimer();
+	startImmediateTimer();
+// 	if(TOS_NODE_ID == 1 || TOS_NODE_ID ==3 || TOS_NODE_ID == 28)
+// 	{ // send directly
+// 	  startImmediateTimer();
+// 	}
+// 	else
+// 	{
+// 	  // only send every three seconds to conserve power
+// 	  startImmediateTimer();
+// 	}
+        
       }
       else // TURN OFF RADIO 
       {      // only turn off if que is empty
       //filter for each node. only turn off on sending only nodes
-	if(TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID!=28)
+      dbg("GroupProjectC", "queue  empty.\n");
+	if(TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID != 28)
 	{
 	    call AMControl.stop();
 	    radioOn=FALSE;
 	    startedRadioAlready=FALSE;
 	    dbg("GroupProjectC", "Radio is OFF.\n");
+	    startForwardTimer();
 	}
       }
 	    
     }
   }
   
-  void startForwardTimer() {
+  
+  
+  void startRandomForwardTimer() 
+  {
     uint16_t delay = call Random.rand16();
     call MilliTimer.startOneShot(1 + delay % (FORWARD_DELAY_MS - 1));
   }
+  
+  void startForwardTimer() 
+  {
+    //uint16_t delay = call Random.rand16();
+    uint16_t delay = 3000;
+    call MilliTimer.startOneShot( delay);
+  }
+  
+    void startImmediateTimer() 
+  {
+    uint16_t delay = 0;
+    call MilliTimer.startOneShot(delay);
+  }
+  
+      void startRadioTurnOnTimer() 
+  {
+    uint16_t delay = 4;
+    call MilliTimer.startOneShot(delay);
+  }
+  
+  
+ 
 
 }

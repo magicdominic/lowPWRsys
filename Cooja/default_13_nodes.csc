@@ -280,7 +280,7 @@
   <plugin>
     org.contikios.cooja.plugins.SimControl
     <width>280</width>
-    <z>2</z>
+    <z>1</z>
     <height>160</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
@@ -295,11 +295,11 @@
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
       <viewport>63.86372000434545 0.0 0.0 63.86372000434545 42.717227416599385 12.489681149793235</viewport>
     </plugin_config>
-    <width>1065</width>
+    <width>386</width>
     <z>0</z>
-    <height>700</height>
-    <location_x>0</location_x>
-    <location_y>0</location_y>
+    <height>527</height>
+    <location_x>3</location_x>
+    <location_y>4</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -309,7 +309,7 @@
       <coloring />
     </plugin_config>
     <width>680</width>
-    <z>7</z>
+    <z>3</z>
     <height>240</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
@@ -336,7 +336,7 @@
       <zoomfactor>500.0</zoomfactor>
     </plugin_config>
     <width>1080</width>
-    <z>6</z>
+    <z>4</z>
     <height>166</height>
     <location_x>0</location_x>
     <location_y>497</location_y>
@@ -348,49 +348,10 @@
       <decorations>true</decorations>
     </plugin_config>
     <width>400</width>
-    <z>5</z>
+    <z>2</z>
     <height>160</height>
     <location_x>680</location_x>
     <location_y>0</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>2</mote_arg>
-    <plugin_config>
-      <interface>Serial port</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>1</z>
-    <height>300</height>
-    <location_x>710</location_x>
-    <location_y>30</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>12</mote_arg>
-    <plugin_config>
-      <interface>Serial port</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>3</z>
-    <height>300</height>
-    <location_x>705</location_x>
-    <location_y>335</location_y>
-  </plugin>
-  <plugin>
-    org.contikios.cooja.plugins.MoteInterfaceViewer
-    <mote_arg>0</mote_arg>
-    <plugin_config>
-      <interface>Serial port</interface>
-      <scrollpos>0,0</scrollpos>
-    </plugin_config>
-    <width>350</width>
-    <z>4</z>
-    <height>300</height>
-    <location_x>247</location_x>
-    <location_y>400</location_y>
   </plugin>
 </simconf>
 
