@@ -24,8 +24,11 @@ implementation {
   components new TimerMilliC();
   
   // serial port
-  //components PrintfC, SerialStartC;   //?? output in flocklab??
+//  components PrintfC, SerialStartC;   //?? output in flocklab??
+
+  components SerialStartC;   //?? output in flocklab??
   components SerialPrintfC; //for output in cooja
+
   components new SerialAMSenderC(AM_GROUP_PROJECT_MSG);
 
   // data generation and forwarding logic

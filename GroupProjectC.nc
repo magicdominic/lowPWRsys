@@ -46,13 +46,15 @@ implementation {
   bool radioOn;
   bool startedRadioAlready;
   uint8_t seq_no = 0;
+  startedSlowTimer=FALSE;
   
   // function prototypes
   error_t enqueue(message_t * m);
   message_t * forward(message_t * fm);
   void message_to_cache_entry(message_t *m, cache_entry_t * c);
   void senddone(message_t* bufPtr, error_t error);
-  void startForwardTimer();
+  void startSlow3sTimer();
+  void startCustomTimer(uint16_t delay);
   void startRandomForwardTimer();
   void startImmediateTimer();
   void startRadioTurnOnTimer();
@@ -68,6 +70,7 @@ implementation {
     {
       call AMControl.start();
     }
+    
 #ifndef COOJA
     call ClockCalibControl.start();
 #endif
@@ -101,7 +104,7 @@ implementation {
 	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
 	call AMControl.start();
 	startedRadioAlready = TRUE;
-	startRadioTurnOnTimer();
+//	startRadioTurnOnTimer();
       }
       else
 	//radio is booting, just wait
@@ -111,8 +114,12 @@ implementation {
     
     if (TOS_NODE_ID == SINK_ADDRESS) 
     {
-      dbg("GroupProjectC", "we are the sink and timer fired.\n");
+      dbg("GroupProjectC", "we are the sink and are now dequeing 1 element.\n");
+      dbg("GroupProjectC", "enq( ) p:%u q:%u\n", call Pool.size(), call Queue.size());
+    
        ret = call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
+       
+       dbg("GroupProjectC", "ret:%u  \n", ret);
     }
     // other nodes forward data over radio
     else 
@@ -228,7 +235,7 @@ implementation {
       }
       else
       {
-	// stay on
+	startRandomForwardTimer(); // retry in a defined while
       }
     }
   }
@@ -343,20 +350,122 @@ implementation {
     
     dbg("GroupProjectC", "Notify: we got more data: %d \n", datamsg);
     
-    call Leds.led0Toggle();
+    // call Leds.led0Toggle();
     
     if(TOS_NODE_ID == 1 || TOS_NODE_ID ==3 || TOS_NODE_ID == 28)
       startImmediateTimer();
     
-    if (TOS_NODE_ID == 1)
+//     if (TOS_NODE_ID == 1)
+//     {
+//       
+//       call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
+//     }
+    
+    // start slow timer on first data item
+    if (!startedSlowTimer)   
     {
-      call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
-    }
-    
-    
-    
-    
-    //if (radioOn == FALSE && (call Queue.size() <3) )     
+	switch (TOS_NODE_ID)
+	    {
+	      case 1: //do shit and 100% duty cycling
+	      // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
+	      dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
+ 
+	      break;
+
+	      case 2: // forwards and receives packets. 1st layer of burst.
+		    // Can receive from nodes 1, 4, 8, 15, and 33.
+		    dbg("GroupProjectC", "Try for lower duty cycles.");
+ 		startCustomTimer(500);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 3: //forwards and receives packets. 2nd layer of burst.
+	      // Can receive from nodes 33, 32, 31, 6, 8, 15
+	      dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");;
+ 
+	      break;
+
+	      case 4: //forwards and receives packets. 1st layer of burst.
+	      // Can receive from nodes 1, 2, 8, 15, and 33.
+	      dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");;
+ 		startCustomTimer(1000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 6: //forwards and receives packets. 3rd layer of burst.
+	      // Can receive from nodes 3, 33, 28, 22, 16, 
+	      dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");;
+		startCustomTimer(3000);
+		startedSlowTimer=TRUE;
+	      break;
+	      
+	      case 8: //forwards and receives packets. 1st layer of burst.
+	      // Can receive from nodes 1, 2, 4, 15, 33, 3 
+	      dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");;
+ 		startCustomTimer(1500);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 15: //forwards and receives packets. 1st layer of burst.
+	      // Can receive from nodes 1, 2, 4, 8, 33, 3 
+	      dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");;
+ 		startCustomTimer(1000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 16: //forwards and receives packets. 3rd layer of burst.
+	      // Can receive from nodes 6, 22, 28, 3
+	      dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");;
+		startCustomTimer(2000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 22: //forwards and receives packets. 3rd layer of burst.
+	      // Can receive from nodes 6, 16, 28, 3
+	      dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");;
+		startCustomTimer(1000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 28: //forwards and receives packets. 3rd layer of burst.
+	      // Can receive from nodes 6, 16, 22, 3, 33
+	      dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");;
+ 		startCustomTimer(0);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 31: //forwards and receives packets. 2nd layer of burst.
+	      // Can receive from nodes 32, 33, 3, 28
+	      dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");;
+ 		startCustomTimer(1000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 32: //forwards and receives packets. 2nd layer of burst.
+	      // Can receive from nodes 31, 3, 33, 15
+	      dbg("GroupProjectC", "Node 32 Receives on 2nd wave of flood \n");;
+ 		startCustomTimer(2000);
+		startedSlowTimer=TRUE;
+	      break;
+
+	      case 33: //forwards and receives packets. 2nd layer of burst.
+	      // Can receive from nodes 8, 15, 2, 3, 32, 31
+	      dbg("GroupProjectC", "Node 33 Receives on 2nd wave of flood \n");;
+ 		startCustomTimer(3000);
+		startedSlowTimer=TRUE;
+	      break;
+
+
+	      default:
+	      
+	    }
+	    
+   } // end if startedSlowTimer
+      
+      
+      
+      
+      
     if (call Pool.size() < 7 )
     {
       dbg("GroupProjectC", "Notify: pool <7.\n");
@@ -365,7 +474,6 @@ implementation {
 	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
 	call AMControl.start();
 	startedRadioAlready = TRUE;
-
       }
       else if(radioOn == FALSE)
       {
@@ -376,8 +484,6 @@ implementation {
       {
 	startImmediateTimer();
       }
-
-      
     }
  
     
@@ -417,7 +523,7 @@ implementation {
     // if not sending, send first packet from queue
     if (!locked) {
       locked = TRUE;
-      startForwardTimer();
+      //startSlow3sTimer();
     }
     
     dbg("GroupProjectC", "enq(%u,%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
@@ -456,6 +562,8 @@ implementation {
   }
   
   void senddone(message_t* bufPtr, error_t error) {
+    dbg("GroupProjectC", "senddone  called.\n");
+    
     if (call Queue.head() == bufPtr) {
       locked = FALSE;
       
@@ -494,7 +602,7 @@ implementation {
 	    radioOn=FALSE;
 	    startedRadioAlready=FALSE;
 	    dbg("GroupProjectC", "Radio is OFF.\n");
-	    startForwardTimer();
+	    startSlow3sTimer();
 	}
       }
 	    
@@ -509,10 +617,15 @@ implementation {
     call MilliTimer.startOneShot(1 + delay % (FORWARD_DELAY_MS - 1));
   }
   
-  void startForwardTimer() 
+  void startCustomTimer(uint16_t delay) 
+  {
+    call MilliTimer.startOneShot( delay);
+  }
+  
+  void startSlow3sTimer() 
   {
     //uint16_t delay = call Random.rand16();
-    uint16_t delay = 3000;
+    uint16_t delay = 4000;
     call MilliTimer.startOneShot( delay);
   }
   
