@@ -337,7 +337,7 @@ implementation {
     message_t * m;
     group_project_msg_t* gpm;
     
-    dbg("GroupProjectC", "Notify: we got more data.\n");
+    dbg("GroupProjectC", "Notify: we got more data: %d \n", datamsg);
     
     call Leds.led0Toggle();
     
@@ -449,13 +449,17 @@ implementation {
         locked = TRUE;
         startForwardTimer();
       }
-      
-      // TURN OFF RADIO 
-      // TODO: filter for each node. only turn off on sending only nodes
+      else // TURN OFF RADIO 
+      {      // only turn off if que is empty
+      //filter for each node. only turn off on sending only nodes
+	if(TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID!=28)
+	{
 	    call AMControl.stop();
 	    radioOn=FALSE;
 	    startedRadioAlready=FALSE;
 	    dbg("GroupProjectC", "Radio is OFF.\n");
+	}
+      }
 	    
     }
   }
