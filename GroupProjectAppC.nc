@@ -22,6 +22,7 @@ implementation {
   components new AMSenderC(AM_GROUP_PROJECT_MSG);
   components new AMReceiverC(AM_GROUP_PROJECT_MSG);
   components new TimerMilliC();
+  components CC2420ControlC;  //Component for Channel selection
   
   // serial port
 //  components PrintfC, SerialStartC;   //?? output in flocklab??
@@ -60,5 +61,7 @@ implementation {
   App.SerialSend -> SerialAMSenderC;
   App.Leds -> LedsC;
   App.MilliTimer -> TimerMilliC;
+  
+  App.CC2420Config -> CC2420ControlC; //Wiring for Channel selection
   
 }

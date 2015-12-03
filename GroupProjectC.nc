@@ -29,6 +29,7 @@ module GroupProjectC @safe() {
     interface Timer<TMilli> as MilliTimer;
     interface SplitControl as AMControl;
     interface Packet;
+    interface CC2420Config;
     interface Notify<group_project_msg_t>;
     interface Cache<cache_entry_t>;
     interface Pool<message_t>;
@@ -38,6 +39,7 @@ module GroupProjectC @safe() {
     interface StdControl as ClockCalibControl;
 #endif
     interface Random;
+    
   }
 }
 implementation {
@@ -80,10 +82,33 @@ implementation {
       call AMControl.start();
     }
     
+    if(TOS_NODE_ID == 28 || TOS_NODE_ID ==6 || TOS_NODE_ID == 22|| TOS_NODE_ID == 16)
+    {
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+        call CC2420Config.setChannel(11);
+	call CC2420Config.sync(); 
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+    }
+    if(TOS_NODE_ID == 31 || TOS_NODE_ID ==32 || TOS_NODE_ID == 3)
+    {
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+        call CC2420Config.setChannel(19);
+	call CC2420Config.sync(); 
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+    }
+    
 #ifndef COOJA
     call ClockCalibControl.start();
 #endif
   }
+  
+ 
+  event void CC2420Config.syncDone( error_t error ) 
+  {
+         dbg("GroupProjectC", "Radio syncDone .\n");
+  }
+  
+  
   
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
@@ -106,7 +131,22 @@ implementation {
         // sink node prints out data on serial port
     dbg("GroupProjectC", "timer fired.\n");
   //  dbg("GroupProjectC", "This is the radios max payload length (%u).\n",call AMSend.maxPayloadLength());
-        
+
+    if(TOS_NODE_ID == 28)
+    {
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+        call CC2420Config.setChannel(19);
+	call CC2420Config.sync(); 
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+    }
+    if(TOS_NODE_ID == 3)
+    {
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+        call CC2420Config.setChannel(26);
+	call CC2420Config.sync(); 
+      dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+    }
+    
     if (radioOn == FALSE) 
     {
       if (startedRadioAlready == FALSE)
@@ -256,6 +296,28 @@ implementation {
  
       dbg("GroupProjectC", "receive.receive msg cam in: source: %d seq_no: %d\n",((group_project_msg_t*)payload)->source,((group_project_msg_t*)payload)->seq_no);
 
+     if (len != sizeof(group_project_msg_t)) 
+    {return bufPtr;}
+    else {
+      return forward(bufPtr);
+    }
+//        combined_msg_t* received_msg = (combined_msg_t*) payload;
+ /*
+        if (len != sizeof(combined_msg_t))
+        {
+            dbg("GroupProjectC", "Message with wrong size received!\n");
+            return bufPtr;
+        }
+        else 
+	{
+	 // return forward(bufPtr);
+	}
+	*/
+      
+    }    
+      /*
+      
+      
     if (len != sizeof(group_project_msg_t)) 
       {
 	return bufPtr;
@@ -359,8 +421,8 @@ implementation {
       }
       
       
-    }
-  }
+    }*/
+
 
   event void Notify.notify(group_project_msg_t datamsg) {
     
@@ -416,7 +478,7 @@ implementation {
 	      case 6: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 3, 33, 28, 22, 16, 
 	      dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");
-		startCustomTimer(3000);
+		startCustomTimer(0);
 		startedSlowTimer=TRUE;
 	      break;
 	      
@@ -618,13 +680,38 @@ implementation {
       {      // only turn off if que is empty
       //filter for each node. only turn off on sending only nodes
       dbg("GroupProjectC", "queue  empty.\n");
+      //change channels back
+      if(TOS_NODE_ID == 28)
+      {
+	dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+	  call CC2420Config.setChannel(11);
+	  call CC2420Config.sync(); 
+	dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+      }
+      if(TOS_NODE_ID == 3)
+      {
+	dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+	  call CC2420Config.setChannel(19);
+	  call CC2420Config.sync(); 
+	dbg("GroupProjectC", "Radio channel is %u.\n", call CC2420Config.getChannel() )
+      }
+      
 	if(TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID != 28)
 	{
 	    call AMControl.stop();
 	    radioOn=FALSE;
 	    startedRadioAlready=FALSE;
 	    dbg("GroupProjectC", "Radio is OFF.\n");
-	    startSlow3sTimer();
+	 
+	    
+	    // synchronization timers 
+	    if(TOS_NODE_ID == 6 || TOS_NODE_ID ==16 || TOS_NODE_ID == 22|| TOS_NODE_ID == 28)
+	      startCustomTimer(2000);
+	    else if(TOS_NODE_ID == 31 || TOS_NODE_ID ==32 || TOS_NODE_ID == 3)
+	      startCustomTimer(3000);
+	    else
+	      startCustomTimer(5000);
+	   
 	}
       }
 	    
