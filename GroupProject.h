@@ -6,7 +6,7 @@
 typedef nx_struct group_project_msg {
   nx_am_addr_t source;
   nx_uint8_t seq_no;
-  nx_uint16_t data;
+  nx_uint32_t data; // changed from 16 to 32
 } group_project_msg_t;
 
 enum {
