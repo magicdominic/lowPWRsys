@@ -375,7 +375,8 @@ implementation {
 	      case 1: //do shit and 100% duty cycling
 	      // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
 	      dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
- 
+  		startCustomTimer(100);
+		startedSlowTimer=TRUE;
 	      break;
 
 	      case 2: // forwards and receives packets. 1st layer of burst.
@@ -388,7 +389,8 @@ implementation {
 	      case 3: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 33, 32, 31, 6, 8, 15
 	      dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");
- 
+ 		startCustomTimer(0);
+		startedSlowTimer=TRUE; 
 	      break;
 
 	      case 4: //forwards and receives packets. 1st layer of burst.
@@ -527,6 +529,7 @@ implementation {
     call Cache.insert(c);
     
     // if not sending, send first packet from queue
+    //TODO is this right???
     if (!locked) {
       locked = TRUE;
       //startSlow3sTimer();
