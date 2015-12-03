@@ -24,7 +24,7 @@ typedef struct cache_entry {
 
 
 
-//uint16_t datarate = DATARATE; 
-uint16_t datarate = 50; 
+uint16_t datarate = DATARATE; 
+//uint16_t datarate = 50; 
 
 #endif

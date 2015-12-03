@@ -46,7 +46,7 @@ implementation {
   bool radioOn;
   bool startedRadioAlready;
   uint8_t seq_no = 0;
-  startedSlowTimer=FALSE;
+  bool startedSlowTimer=FALSE;
   
   // function prototypes
   error_t enqueue(message_t * m);
@@ -96,12 +96,13 @@ implementation {
     error_t ret;
     // sink node prints out data on serial port
     dbg("GroupProjectC", "timer fired.\n");
-    
+    dbg("GroupProjectC", "This is the radios max payload length (%u).\n",call AMSend.maxPayloadLength());
+        
     if (radioOn == FALSE) 
     {
       if (startedRadioAlready == FALSE)
       {
-	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
+	dbg("GroupProjectC", "radio is off and is now being turned on. testing my complier\n");
 	call AMControl.start();
 	startedRadioAlready = TRUE;
 //	startRadioTurnOnTimer();
@@ -348,7 +349,7 @@ implementation {
     message_t * m;
     group_project_msg_t* gpm;
     
-    dbg("GroupProjectC", "Notify: we got more data: %d \n", datamsg);
+   // dbg("GroupProjectC", "Notify: we got more data: %d \n", datamsg);
     
     // call Leds.led0Toggle();
     
