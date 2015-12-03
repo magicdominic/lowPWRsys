@@ -12,6 +12,13 @@
  * packet that it has not seen yet. This forwarding concept, called flooding, propagates the packets in
  * the whole network. A sink node prints out the received packets.
  **/
+
+  typedef nx_struct combined_msg {
+    nx_am_addr_t source;
+    nx_uint8_t seq_no;
+    nx_uint8_t size;
+    nx_uint16_t data[10];  
+  } combined_msg_t;
  
 module GroupProjectC @safe() {
   uses {
@@ -58,6 +65,8 @@ implementation {
   void startRandomForwardTimer();
   void startImmediateTimer();
   void startRadioTurnOnTimer();
+  
+
 
   
   enum {
@@ -94,15 +103,15 @@ implementation {
       
   event void MilliTimer.fired() {
     error_t ret;
-    // sink node prints out data on serial port
+        // sink node prints out data on serial port
     dbg("GroupProjectC", "timer fired.\n");
-    dbg("GroupProjectC", "This is the radios max payload length (%u).\n",call AMSend.maxPayloadLength());
+  //  dbg("GroupProjectC", "This is the radios max payload length (%u).\n",call AMSend.maxPayloadLength());
         
     if (radioOn == FALSE) 
     {
       if (startedRadioAlready == FALSE)
       {
-	dbg("GroupProjectC", "radio is off and is now being turned on. testing my complier\n");
+	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
 	call AMControl.start();
 	startedRadioAlready = TRUE;
 //	startRadioTurnOnTimer();
@@ -137,7 +146,7 @@ implementation {
 	case 2: // forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 4, 8, 15, and 33.
 	      dbg("GroupProjectC", "Node 2 fwds to 1.");
-	      ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
+	      ret = call AMSend.send(1, call Queue.head(), sizeof(combined_msg_t));
 	
 	break;
 
@@ -245,7 +254,10 @@ implementation {
           dbg("GroupProjectC", "message came in. \n");
 
     if (len != sizeof(group_project_msg_t)) 
-      {return bufPtr;}
+      {
+	return bufPtr;
+        dbg("GroupProjectC", "received: %d.\n",*(int*)payload);
+    }
     else 
     {
       // decide if we should forward our message
