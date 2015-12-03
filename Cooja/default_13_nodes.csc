@@ -280,8 +280,8 @@
   <plugin>
     org.contikios.cooja.plugins.SimControl
     <width>280</width>
-    <z>1</z>
-    <height>160</height>
+    <z>4</z>
+    <height>144</height>
     <location_x>400</location_x>
     <location_y>0</location_y>
   </plugin>
@@ -293,13 +293,13 @@
       <skin>org.contikios.cooja.plugins.skins.GridVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.TrafficVisualizerSkin</skin>
       <skin>org.contikios.cooja.plugins.skins.UDGMVisualizerSkin</skin>
-      <viewport>63.86372000434545 0.0 0.0 63.86372000434545 42.717227416599385 12.489681149793235</viewport>
+      <viewport>44.34980555857324 0.0 0.0 44.34980555857324 20.803630150416232 4.784500798467514</viewport>
     </plugin_config>
-    <width>386</width>
-    <z>0</z>
-    <height>527</height>
-    <location_x>3</location_x>
-    <location_y>4</location_y>
+    <width>293</width>
+    <z>1</z>
+    <height>427</height>
+    <location_x>9</location_x>
+    <location_y>-11</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.LogListener
@@ -309,10 +309,10 @@
       <coloring />
     </plugin_config>
     <width>680</width>
-    <z>3</z>
+    <z>2</z>
     <height>240</height>
-    <location_x>400</location_x>
-    <location_y>160</location_y>
+    <location_x>397</location_x>
+    <location_y>127</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.TimeLine
@@ -333,13 +333,13 @@
       <showRadioRXTX />
       <showRadioHW />
       <showLEDs />
-      <zoomfactor>500.0</zoomfactor>
+      <zoomfactor>100000.0</zoomfactor>
     </plugin_config>
     <width>1080</width>
-    <z>4</z>
-    <height>166</height>
-    <location_x>0</location_x>
-    <location_y>497</location_y>
+    <z>0</z>
+    <height>320</height>
+    <location_x>-3</location_x>
+    <location_y>362</location_y>
   </plugin>
   <plugin>
     org.contikios.cooja.plugins.Notes
@@ -348,8 +348,8 @@
       <decorations>true</decorations>
     </plugin_config>
     <width>400</width>
-    <z>2</z>
-    <height>160</height>
+    <z>3</z>
+    <height>140</height>
     <location_x>680</location_x>
     <location_y>0</location_y>
   </plugin>

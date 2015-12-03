@@ -241,6 +241,8 @@ implementation {
   }
 
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
+          dbg("GroupProjectC", "message came in. \n");
+
     if (len != sizeof(group_project_msg_t)) 
       {return bufPtr;}
     else 
@@ -258,7 +260,8 @@ implementation {
       {
 	case 1: //do shit and 100% duty cycling
 	 // FlockLab nodes 1, 2, 3, 4, 6, 8, 15, 16, 22, 28, 31, 32, and 33
-	dbg("GroupProjectC", "receive: node 1 detected doing nothing.\n");
+	dbg("GroupProjectC", "receive: node 1 enqueueing.\n");
+	enqueue(bufPtr);  
 	return bufPtr;
 	break;
 
@@ -270,67 +273,69 @@ implementation {
 
 	case 3: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 33, 32, 31, 6, 8, 15
-	dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");;
+	dbg("GroupProjectC", "Node 3 Received a packet... enqueueing.\n");
+	enqueue(bufPtr);  
 	return bufPtr;
 	break;
 
 	case 4: //forwards and receives packets. 1st layer of burst.
 	// Can receive from nodes 1, 2, 8, 15, and 33.
-	dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");;
+	dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");
 	return bufPtr;
 	break;
 
 	case 6: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 3, 33, 28, 22, 16, 
-	dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");;
+	dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");
 	return bufPtr;
 	break;
 	
 	case 8: //forwards and receives packets. 1st layer of burst.
 	// Can receive from nodes 1, 2, 4, 15, 33, 3 
-	dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");;
+	dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 15: //forwards and receives packets. 1st layer of burst.
 	// Can receive from nodes 1, 2, 4, 8, 33, 3 
-	dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");;
+	dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 16: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 22, 28, 3
-	dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");;
+	dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 22: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 16, 28, 3
-	dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");;
+	dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 28: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 16, 22, 3, 33
-	dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");;
+	dbg("GroupProjectC", "Node 28 Received packet enqueueing.\n");
+	enqueue(bufPtr);  
 	return bufPtr;
 	break;
 
 	case 31: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 32, 33, 3, 28
-	dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");;
+	dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 32: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 31, 3, 33, 15
-	dbg("GroupProjectC", "Node 32 Receives on 2nd wave of flood \n");;
+	dbg("GroupProjectC", "Node 32 Receives on 2nd wave of flood \n");
 	return bufPtr;
 	break;
 
 	case 33: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 8, 15, 2, 3, 32, 31
-	dbg("GroupProjectC", "Node 33 Receives on 2nd wave of flood \n");;
+	dbg("GroupProjectC", "Node 33 Receives on 2nd wave of flood \n");
 	return bufPtr;
 	break;
 
@@ -381,62 +386,62 @@ implementation {
 
 	      case 3: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 33, 32, 31, 6, 8, 15
-	      dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");;
+	      dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");
  
 	      break;
 
 	      case 4: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 8, 15, and 33.
-	      dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");;
+	      dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");
  		startCustomTimer(1000);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 6: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 3, 33, 28, 22, 16, 
-	      dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");;
+	      dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");
 		startCustomTimer(3000);
 		startedSlowTimer=TRUE;
 	      break;
 	      
 	      case 8: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 4, 15, 33, 3 
-	      dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");;
+	      dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");
  		startCustomTimer(1500);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 15: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 4, 8, 33, 3 
-	      dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");;
+	      dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");
  		startCustomTimer(1000);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 16: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 22, 28, 3
-	      dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");;
+	      dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");
 		startCustomTimer(2000);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 22: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 16, 28, 3
-	      dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");;
+	      dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");
 		startCustomTimer(1000);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 28: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 16, 22, 3, 33
-	      dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");;
+	      dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");
  		startCustomTimer(0);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 31: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 32, 33, 3, 28
-	      dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");;
+	      dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");
  		startCustomTimer(1000);
 		startedSlowTimer=TRUE;
 	      break;
@@ -625,7 +630,7 @@ implementation {
   void startSlow3sTimer() 
   {
     //uint16_t delay = call Random.rand16();
-    uint16_t delay = 6000;
+    uint16_t delay = 4000;
     call MilliTimer.startOneShot( delay);
   }
   
