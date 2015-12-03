@@ -125,6 +125,7 @@ implementation {
     if (TOS_NODE_ID == SINK_ADDRESS) 
     {
       dbg("GroupProjectC", "we are the sink and are now dequeing 1 element.\n");
+
       dbg("GroupProjectC", "enq( ) p:%u q:%u\n", call Pool.size(), call Queue.size());
     
        ret = call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
@@ -200,7 +201,7 @@ implementation {
 
 	case 28: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 16, 22, 3, 33
-	dbg("GroupProjectC", "Node 28 collects and forwards to 3\n");
+	dbg("GroupProjectC", "Node 28 collects and forwards to 3 send now\n");
 	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
 	
 	break;
@@ -220,8 +221,8 @@ implementation {
 
 	case 33: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 8, 15, 2, 3, 32, 31
-	dbg("GroupProjectC", "Node 33 sends to 3 \n");
-	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
+	dbg("GroupProjectC", "Node 33 sends to 1 \n");
+	ret = call AMSend.send(1, call Queue.head(), sizeof(group_project_msg_t));
 
 	break;
 
@@ -251,7 +252,9 @@ implementation {
   }
 
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
-          dbg("GroupProjectC", "message came in. \n");
+ 
+ 
+      dbg("GroupProjectC", "receive.receive msg cam in: source: %d seq_no: %d\n",((group_project_msg_t*)payload)->source,((group_project_msg_t*)payload)->seq_no);
 
     if (len != sizeof(group_project_msg_t)) 
       {
@@ -265,8 +268,7 @@ implementation {
       //we are:     TOS_NODE_ID
       
       // from: 
-      
-      dbg("GroupProjectC", "received: %d.\n",*(int*)payload);
+       
       
       
       switch (TOS_NODE_ID)
@@ -286,9 +288,8 @@ implementation {
 
 	case 3: //forwards and receives packets. 2nd layer of burst.
 	// Can receive from nodes 33, 32, 31, 6, 8, 15
-	dbg("GroupProjectC", "Node 3 Received a packet... enqueueing.\n");
-	enqueue(bufPtr);  
-	return bufPtr;
+	dbg("GroupProjectC", "Node 3 Received a packet... forwadring.\n");
+	  forward(bufPtr);
 	break;
 
 	case 4: //forwards and receives packets. 1st layer of burst.
@@ -330,7 +331,7 @@ implementation {
 	case 28: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 16, 22, 3, 33
 	dbg("GroupProjectC", "Node 28 Received packet enqueueing.\n");
-	enqueue(bufPtr);  
+	enqueue(bufPtr);  // or forward(bufPtr);
 	return bufPtr;
 	break;
 
@@ -547,7 +548,7 @@ implementation {
       //startSlow3sTimer();
     }
     
-    dbg("GroupProjectC", "enq(%u,%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
+    dbg("GroupProjectC", "enq(source:%u,seq_no:%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
     return SUCCESS;
   }
   
