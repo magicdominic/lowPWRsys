@@ -46,10 +46,17 @@ implementation {
 
 #ifdef debug_printf
 #undef dbg
+/*
 #define dbg(component, fmt, ...) do {\
   printf(fmt, ##__VA_ARGS__);\
   } while(0);
+#endif*/
+
+
+#define dbg(component, fmt, ...) do {\
+  } while(0);
 #endif
+
 
   bool locked;
   bool radioOn;
@@ -72,7 +79,7 @@ implementation {
 
   
   enum {
-    FORWARD_DELAY_MS = 50, // max wait time between two forwarded packets
+    FORWARD_DELAY_MS = 100, // max wait time between two forwarded packets
   };
   
   event void Boot.booted() 
@@ -113,7 +120,7 @@ implementation {
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
       radioOn=TRUE;
-      call Leds.led1On();
+//      call Leds.led1On();
       dbg("GroupProjectC", "Radio sucessfully booted, Radio is on, datarate is %u.\n", datarate);
     }
     else {
@@ -129,7 +136,7 @@ implementation {
   event void MilliTimer.fired() {
     error_t ret;
         // sink node prints out data on serial port
-    dbg("GroupProjectC", "timer fired.\n");
+//    dbg("GroupProjectC", "timer fired.\n");
   //  dbg("GroupProjectC", "This is the radios max payload length (%u).\n",call AMSend.maxPayloadLength());
 
     if(TOS_NODE_ID == 28)
@@ -170,12 +177,12 @@ implementation {
     
        ret = call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
        
-       dbg("GroupProjectC", "ret:%u  \n", ret);
+      // dbg("GroupProjectC", "ret:%u  \n", ret);
     }
     // other nodes forward data over radio
     else 
     {
-      dbg("GroupProjectC", "timer start switch.\n");
+      //dbg("GroupProjectC", "timer start switch.\n");
       switch (TOS_NODE_ID)
       {
 	case 1: //do shit and 100% duty cycling
@@ -272,7 +279,7 @@ implementation {
 
       }
       
-      dbg("GroupProjectC", "done timer.\n");
+//      dbg("GroupProjectC", "done timer.\n");
  
       
       
@@ -282,10 +289,13 @@ implementation {
     {
       if (TOS_NODE_ID != 1 && TOS_NODE_ID !=3 && TOS_NODE_ID != 28)
       {
+	dbg("GroupProjectC", "send failed to return an ACK. retrying soon.\n");
 	  startRandomForwardTimer(); // retry in a defined while
       }
       else
       {
+		dbg("GroupProjectC", "send failed to return an ACK. retrying soon.\n");
+
 	startRandomForwardTimer(); // retry in a defined while
       }
     }
@@ -457,84 +467,84 @@ implementation {
 	      case 2: // forwards and receives packets. 1st layer of burst.
 		    // Can receive from nodes 1, 4, 8, 15, and 33.
 		    dbg("GroupProjectC", "Try for lower duty cycles.");
- 		startCustomTimer(500);
+ 		startCustomTimer(10);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 3: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 33, 32, 31, 6, 8, 15
 	      dbg("GroupProjectC", "Node 3 Receives on 2nd wave \n");
- 		startCustomTimer(0);
+ 		startCustomTimer(2000);
 		startedSlowTimer=TRUE; 
 	      break;
 
 	      case 4: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 8, 15, and 33.
 	      dbg("GroupProjectC", "Node 4 Receives on 1st wave \n");
- 		startCustomTimer(1000);
+ 		startCustomTimer(400);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 6: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 3, 33, 28, 22, 16, 
 	      dbg("GroupProjectC", "Node 6 Receives on 3rd wave of flood \n");
-		startCustomTimer(0);
+		startCustomTimer(10);
 		startedSlowTimer=TRUE;
 	      break;
 	      
 	      case 8: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 4, 15, 33, 3 
 	      dbg("GroupProjectC", "Node 8 Receives on 1st wave of flood \n");
- 		startCustomTimer(1500);
+ 		startCustomTimer(1200);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 15: //forwards and receives packets. 1st layer of burst.
 	      // Can receive from nodes 1, 2, 4, 8, 33, 3 
 	      dbg("GroupProjectC", "Node 15 Receives on 1st wave of flood \n");
- 		startCustomTimer(1000);
+ 		startCustomTimer(1600);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 16: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 22, 28, 3
 	      dbg("GroupProjectC", "Node 16 Receives on 3rd wave of flood \n");
-		startCustomTimer(2000);
+		startCustomTimer(300);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 22: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 16, 28, 3
 	      dbg("GroupProjectC", "Node 22 Receives on 3rd wave of flood \n");
-		startCustomTimer(1000);
+		startCustomTimer(600);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 28: //forwards and receives packets. 3rd layer of burst.
 	      // Can receive from nodes 6, 16, 22, 3, 33
 	      dbg("GroupProjectC", "Node 28 Receives on 3rd wave of flood \n");
- 		startCustomTimer(0);
+ 		startCustomTimer(900);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 31: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 32, 33, 3, 28
 	      dbg("GroupProjectC", "Node 31 Receives on 2nd wave of flood \n");
- 		startCustomTimer(1000);
+ 		startCustomTimer(10);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 32: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 31, 3, 33, 15
 	      dbg("GroupProjectC", "Node 32 Receives on 2nd wave of flood \n");
- 		startCustomTimer(2000);
+ 		startCustomTimer(500);
 		startedSlowTimer=TRUE;
 	      break;
 
 	      case 33: //forwards and receives packets. 2nd layer of burst.
 	      // Can receive from nodes 8, 15, 2, 3, 32, 31
 	      dbg("GroupProjectC", "Node 33 Receives on 2nd wave of flood \n");
- 		startCustomTimer(3000);
+ 		startCustomTimer(1600);
 		startedSlowTimer=TRUE;
 	      break;
 
@@ -723,7 +733,10 @@ implementation {
   void startRandomForwardTimer() 
   {
     uint16_t delay = call Random.rand16();
-    call MilliTimer.startOneShot(1 + delay % (FORWARD_DELAY_MS - 1));
+    delay=1 + delay % (FORWARD_DELAY_MS - 1);
+    dbg("GroupProjectC", "retry in ms: %u.\n", delay )
+
+    call MilliTimer.startOneShot(delay);
   }
   
   void startCustomTimer(uint16_t delay) 
