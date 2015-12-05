@@ -21,7 +21,8 @@ implementation {
   components ActiveMessageC;
   components new AMSenderC(AM_GROUP_PROJECT_MSG);
   components new AMReceiverC(AM_GROUP_PROJECT_MSG);
-  components new TimerMilliC();
+  components new TimerMilliC() as Timer1;
+  components new TimerMilliC() as Timer2;
   components CC2420ControlC;  //Component for Channel selection
   
   // serial port
@@ -60,7 +61,8 @@ implementation {
 
   App.SerialSend -> SerialAMSenderC;
   App.Leds -> LedsC;
-  App.MilliTimer -> TimerMilliC;
+  App.MilliTimer -> Timer1;
+  App.MilliTimer2 -> Timer2;
   
   App.CC2420Config -> CC2420ControlC; //Wiring for Channel selection
   
