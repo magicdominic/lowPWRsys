@@ -112,7 +112,7 @@ implementation {
 #ifndef COOJA
     call ClockCalibControl.start();
 #endif
-     	      dbg("GroupProjectC", "Setting initial timers \n");
+//     	      dbg("GroupProjectC", "Setting initial timers \n");
 
     // start slow timer on  boot    startPeriodicAt(uint16_t t0_start, uint16_t dt_delay) 
 	switch (TOS_NODE_ID)
@@ -243,7 +243,7 @@ implementation {
     if (err == SUCCESS) {
       radioOn=TRUE;
 //      call Leds.led1On();
-      dbg("GroupProjectC", "Radio sucessfully booted, Radio is on, datarate is %u.\n", datarate);
+//      dbg("GroupProjectC", "Radio sucessfully booted, Radio is on, datarate is %u.\n", datarate);
     }
     else {
       call AMControl.start();
@@ -394,7 +394,9 @@ task void sendTask() {
     }//end if queue not empty
     else
     {//queue empty
-      dbg("GroupProjectC", "queue emtpty in send task (at end).\n");
+
+//disabled    
+//    dbg("GroupProjectC", "queue emtpty in send task (at end).\n");
       
 	  // TODO TRIAL REMOVE AFTER DONE TESTING
 	  // 
@@ -424,7 +426,7 @@ event void MilliTimer2.fired() {// aka radio turn on task
     return; // dont do anything if we dont have data
 
 
-  dbg("GroupProjectC", "MilliTimer2.fired(). making sure radio is on\n");
+//  dbg("GroupProjectC", "MilliTimer2.fired(). making sure radio is on\n");
     
 
       if ( (radioOn == FALSE)  )  
@@ -456,7 +458,7 @@ event void MilliTimer2.fired() {// aka radio turn on task
     return; // dont do anything if we dont have data
 
     
-   dbg("GroupProjectC", "MilliTimer fired.\n");
+//   dbg("GroupProjectC", "MilliTimer fired.\n");
     
     
         // sink node prints out data on serial port
@@ -728,7 +730,7 @@ event void MilliTimer2.fired() {// aka radio turn on task
       //startSlow3sTimer();
     }
 // TODO temporarily disabled for speed on NODE 1 serial    
-    dbg("GroupProjectC", "enq(source:%u,seq_no:%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
+//    dbg("GroupProjectC", "enq(source:%u,seq_no:%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
     return SUCCESS;
   }
   
@@ -808,7 +810,10 @@ event void MilliTimer2.fired() {// aka radio turn on task
       else // TURN OFF RADIO 
       {      // only turn off if que is empty
       //filter for each node. only turn off on sending only nodes
-      dbg("GroupProjectC", "queue  empty.\n");
+
+      //disabled
+      //      dbg("GroupProjectC", "queue  empty.\n");
+      
       //change channels back
 //       if(TOS_NODE_ID == 28)
 //       {
