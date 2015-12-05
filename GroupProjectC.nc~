@@ -48,17 +48,18 @@ implementation {
 #ifdef debug_printf
 #undef dbg
 
+// #define dbg(component, fmt, ...) do {\
+//   printf(fmt, ##__VA_ARGS__);\
+//   } while(0);
+// #endif
+ 
+
+
 #define dbg(component, fmt, ...) do {\
-  printf(fmt, ##__VA_ARGS__);\
+
   } while(0);
 #endif
  
-
-/*
-#define dbg(component, fmt, ...) do {\
-  } while(0);
-#endif
-#endif*/
 
   bool locked;
   bool radioOn;
@@ -261,14 +262,22 @@ task void sendTask() {
   error_t ret;
   
 //    dbg("GroupProjectC", "\nsend Task fired.\n");
-
-  
   if (radioOn == FALSE) // try again later
   {
       //post sendTask();  // we now have a timer dont do it anymore
         dbg("GroupProjectC", "ERROR radio is off during send task.\n");
       return;
-  }
+  }  
+  
+  // dont do it twice
+//   if(TOS_NODE_ID==1)
+//   {
+//     ret = call SerialSend.send(AM_BROADCAST_ADDR, call Queue.head(), sizeof(group_project_msg_t));
+//     return;
+//   }
+
+  
+
   
   if (!call Queue.empty()) 
     {
@@ -304,7 +313,7 @@ task void sendTask() {
 
 	case 6: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 3, 33, 28, 22, 16, 
-	dbg("GroupProjectC", "Node 6 sends to 28 \n");
+	dbg("GroupProjectC", "Node 6 sends to 3 \n");
 	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
 	break;
 
@@ -323,14 +332,14 @@ task void sendTask() {
 
 	case 16: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 22, 28, 3
-	dbg("GroupProjectC", "Node 16 sends to 28 \n");
+	dbg("GroupProjectC", "Node 16 sends to 3 \n");
 	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
 	
 	break;
 
 	case 22: //forwards and receives packets. 3rd layer of burst.
 	// Can receive from nodes 6, 16, 28, 3
-	dbg("GroupProjectC", "Node 22 sends to 28 \n");
+	dbg("GroupProjectC", "Node 22 sends to 3 \n");
 	ret = call AMSend.send(3, call Queue.head(), sizeof(group_project_msg_t));
 	
 	break;
@@ -370,9 +379,11 @@ task void sendTask() {
       
     if (ret != SUCCESS) 
     {
-	dbg("GroupProjectC", "ERROR send failed to return an ACK. retrying soon.\n");
+	dbg("GroupProjectC", "ERROR send failed to return an ACK. retrying soon. ret:%u\n",ret);
 	 
     }
+     
+     // dbg("GroupProjectC", "send returned ack ok. ret:%u\n",ret);
      // start send task again only after finished sending: in sendDone !!!
      
      
@@ -426,7 +437,7 @@ event void MilliTimer2.fired() {// aka radio turn on task
     return; // dont do anything if we dont have data
 
 
-//  dbg("GroupProjectC", "MilliTimer2.fired(). making sure radio is on\n");
+  dbg("GroupProjectC", "MilliTimer2.fired(). making sure radio is on\n");
     
 
       if ( (radioOn == FALSE)  )  
@@ -509,12 +520,17 @@ event void MilliTimer2.fired() {// aka radio turn on task
   event message_t* Receive.receive(message_t* bufPtr, void* payload, uint8_t len) {
  
  
-//      dbg("GroupProjectC", "receive.receive msg cam in: source: %d seq_no: %d\n",((group_project_msg_t*)payload)->source,((group_project_msg_t*)payload)->seq_no);
+    dbg("GroupProjectC", "receive.receive msg cam in: source: %d seq_no: %d\n",((group_project_msg_t*)payload)->source,((group_project_msg_t*)payload)->seq_no);
 
      if (len != sizeof(group_project_msg_t)) 
-    {return bufPtr;}
-    else {
+    {
+      dbg("GroupProjectC", "ERROR wrong msg size");
+      return bufPtr;
+    }
+    else 
+    {
       return forward(bufPtr);
+      //return enqueue(bufPtr);
     }
 //        combined_msg_t* received_msg = (combined_msg_t*) payload;
  /*
@@ -671,28 +687,29 @@ event void MilliTimer2.fired() {// aka radio turn on task
     if (call Pool.size() < 10 )
     {
       dbg("GroupProjectC", "Notify: pool <10.\n");
-      if (startedRadioAlready == FALSE)
-      {
-	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
-	call AMControl.start();
-	startedRadioAlready = TRUE;
-      }
-      else if(radioOn == FALSE)
-      {
-	//radio is booting, just wait
-	dbg("GroupProjectC", "radio is still booting.\n");
-      }
-      else
-      {
-	startImmediateTimer();
-      }
+//       if (startedRadioAlready == FALSE)
+//       {
+// 	dbg("GroupProjectC", "radio is off and is now being turned on.\n");
+// 	call AMControl.start();
+// 	startedRadioAlready = TRUE;
+//       }
+//       else if(radioOn == FALSE)
+//       {
+// 	//radio is booting, just wait
+// 	dbg("GroupProjectC", "radio is still booting.\n");
+//       }
+//       else
+//       {
+// 	startImmediateTimer();
+//       }
     }
  
     
     
     m = call Pool.get();
     if (m == NULL) {
-      dbg("GroupProjectC", "Notify: pool is empty => queue is full or pool returned null object.\n");
+//      dbg("GroupProjectC", "ERROR: pool is empty => queue is full or pool returned null object.\n");
+      dbg("GroupProjectC", "ERROR: dropping data since queue full (no more pool items).\n");
       return;
     }
     gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
@@ -711,17 +728,17 @@ event void MilliTimer2.fired() {// aka radio turn on task
   }
   
   error_t enqueue(message_t * m) {
-    cache_entry_t c;
+//    cache_entry_t c;
     // add message to queue
     if (call Queue.enqueue(m) == FAIL) {
-      dbg("GroupProjectC", "ERROR drop(%u,%u).\n", c.source, c.seq_no);
+      dbg("GroupProjectC", "ERROR droped message when enquing pool pointer( ).\n" );
       call Pool.put(m); // return buffer
       return FAIL;
     }
     
     // update cache
-    message_to_cache_entry(m, &c);
-    call Cache.insert(c);
+	//    message_to_cache_entry(m, &c);
+	//    call Cache.insert(c);
     
     // if not sending, send first packet from queue
     //TODO is this right???
@@ -729,27 +746,35 @@ event void MilliTimer2.fired() {// aka radio turn on task
    //   locked = TRUE;
       //startSlow3sTimer();
     }
+
+ 
+    
 // TODO temporarily disabled for speed on NODE 1 serial    
 //    dbg("GroupProjectC", "enq(source:%u,seq_no:%u) p:%u q:%u\n", c.source, c.seq_no, call Pool.size(), call Queue.size());
+//      dbg("GroupProjectC", "enq(source:%u,seq_no:%u) p:%u q:%u\n",((group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t)))->source,((group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t)))->seq_no, call Pool.size(), call Queue.size());
     return SUCCESS;
   }
   
+  
+  
+  
   message_t * forward(message_t * fm) {
-    cache_entry_t c;
+  //  cache_entry_t c;
 
     // get spare message buffer
     message_t * m = call Pool.get();
-    if (m == NULL) {
-      dbg("GroupProjectC", "forward(): no more message buffers.\n");
-      return fm; // no space available, return pointer to original message
+    if (m == NULL) 
+    {
+      dbg("GroupProjectC", "ERROR forward(): no more message buffers. return pointer to receive it will be overwritten\n");
+      return fm; // no space available, return pointer to receive it will be overwritten
     }
     
     // check if already forwarded
-    message_to_cache_entry(fm, &c);
-    if (call Cache.lookup(c)) {
-      call Pool.put(m); // return buffer
-      return fm;// already forwarded once
-    }
+// 	message_to_cache_entry(fm, &c);
+// 	if (call Cache.lookup(c)) {
+// 	  call Pool.put(m); // return buffer
+// 	  return fm;// already forwarded once
+// 	}
     
     // enqueue for forwarding
     enqueue(fm);
@@ -758,18 +783,21 @@ event void MilliTimer2.fired() {// aka radio turn on task
     return m;
   }
   
-  void message_to_cache_entry(message_t *m, cache_entry_t * c) {
-    group_project_msg_t* gpm;
-    gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
-    c->source = gpm->source;
-    c->seq_no = gpm->seq_no;
-  }
+  
+  
+  
+//   void message_to_cache_entry(message_t *m, cache_entry_t * c) {
+//     group_project_msg_t* gpm;
+//     gpm = (group_project_msg_t*)call Packet.getPayload(m, sizeof(group_project_msg_t));
+//     c->source = gpm->source;
+//     c->seq_no = gpm->seq_no;
+//   }
   
   void senddone(message_t* bufPtr, error_t error) {
 //    dbg("GroupProjectC", "senddone  called.\n");
     
     if (error)
-    dbg("GroupProjectC", "ERROR senddone(error_t)  error: %u\n", error);
+	dbg("GroupProjectC", "ERROR senddone(error_t)  error: %u\n", error);
 	
 	
     
